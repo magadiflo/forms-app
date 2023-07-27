@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { FormBuilder, FormGroup } from '@angular/forms';
 
 @Component({
   selector: 'app-basic-page',
@@ -7,5 +8,17 @@ import { Component } from '@angular/core';
   ]
 })
 export class BasicPageComponent {
+
+  public myForm: FormGroup = this._fb.group({
+    name: [''],
+    price: [0],
+    inStorage: [0],
+  });
+
+  constructor(private _fb: FormBuilder) { }
+
+  onSave(): void {
+    console.log(this.myForm.value);
+  }
 
 }
