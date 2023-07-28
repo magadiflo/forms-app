@@ -33,6 +33,10 @@ export class DynamicPageComponent {
     this.myForm.reset();
   }
 
+  onDeleteFavorite(index: number): void {
+    this.favoriteGames.removeAt(index);
+  }
+
   isNotValidField(field: string): boolean {
     const control = this.myForm.controls[field];
     return control && (control.errors || false) && control.touched;
