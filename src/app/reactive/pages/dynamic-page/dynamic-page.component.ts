@@ -33,4 +33,29 @@ export class DynamicPageComponent {
     this.myForm.reset();
   }
 
+  isNotValidField(field: string): boolean {
+    const control = this.myForm.controls[field];
+    return control && (control.errors || false) && control.touched;
+  }
+
+  isNotValidFieldArray(formArray: FormArray, index: number): boolean {
+    const control = formArray.controls[index];
+    return control && (control.errors || false) && control.touched;
+  }
+
+  getErrorMessage(field: string): string {
+    const control = this.myForm.controls[field];
+    const errors = control.errors || {};
+
+    for (const key of Object.keys(errors)) {
+      switch (key) {
+        case 'required': return `El campo "${field}" es requerido.`;
+        case 'minlength': return `El campo "${field}" requiere mínimo ${errors['minlength'].requiredLength} caracteres.`;
+        case 'min': return `El campo "${field}" requiere como valor mínimo ${errors['min'].min}.`;
+      }
+    }
+
+    return Object.entries(errors).length === 0 ? '' : `El campo ${field} contiene un valor incorrecto.`;
+  }
+
 }
