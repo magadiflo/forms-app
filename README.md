@@ -180,3 +180,30 @@ export class BasicPageComponent {
 - **(3)** es similar al punto **(2)**, pero en este caso si el **control.errors es null** el valor que se asignará a la constante errors será el objeto vacío **{}**.
 - **(4)** el **Object.entries(mi-objeto)** devuelve un array de valores/clave de las propiedades enumerables de un objeto. Y si en el **(3)** la constante **errors**
   toma el objeto vacío **{}**, entonces con el código que estamos colocando en este punto **(4)** sí sería igual a **cero (0)**.
+
+# Sección: Validaciones
+
+## Validators.required vs Validators.requiredTrue
+
+**Validators.required**, este validador requiere que el control tenga un valor no vacío. Ahora, en el caso de que estemos usando un **checkbox** como en el formulario de la página de los **switches** y tengamos un campo
+en nuestro formulario reactivo que tenga la validación **Validators.required** y esté apuntando a este **checkbox**, lo que indicará sera que en el campo del input checkbox **tiene que haber un valor, ya sea true (seleccionado) o false (no seleccionado)**, pero no puede estar vacío o en este caso no puede ser null. El null podría darse cuando nosotros mismos asignamos ese valor como valor inicial del campo.
+
+Parte del formulario html
+````html
+<input type="checkbox" formControlName="wantNotifications">
+````
+Parte del formulario reactivo
+````typescript
+wantNotifications: [true, Validators.required],
+````
+
+**Validators.requiredTrue**, este validador requiere que el valor del control sea verdadero. **Este validador se usa comúnmente para las casillas de verificación requeridas.** En pocas palabras, este validador nos dice que el input checkbox **tiene que estar sí o sí en true (seleccionada).**
+
+Parte del formulario html
+````html
+<input type="checkbox" formControlName="termsAndConditions"">
+````
+Parte del formulario reactivo
+````typescript
+termsAndConditions: [false, Validators.requiredTrue]
+````
