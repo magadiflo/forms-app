@@ -207,3 +207,19 @@ Parte del formulario reactivo
 ````typescript
 termsAndConditions: [false, Validators.requiredTrue]
 ````
+
+## Destructuración de objetos
+
+En el componente de typescript **SwitchesPageComponent** usamos el siguiente código para destructurar el objeto del valor del formulario:
+
+
+````typescript
+const { termsAndConditions, ...newPerson } = this.myForm.value;
+this.person = newPerson;
+````
+
+**{ termsAndConditions, ...newPerson }:** La destructuración de objetos se utiliza para extraer propiedades específicas de un objeto en variables independientes. Aquí, tenemos dos partes de la destructuración:
+
+- **termsAndConditions:** Esto extrae el valor del atributo termsAndConditions del objeto **this.myForm.value** y **lo asigna a la variable termsAndConditions.**
+
+- **...newPerson:** El operador de propagación **...** se utiliza para **recopilar el resto de las propiedades en un nuevo objeto llamado newPerson.** Esto significa que **todas las demás propiedades del objeto this.myForm.value** que no se hayan extraído en variables anteriores (como termsAndConditions) **se agruparán en newPerson.**
