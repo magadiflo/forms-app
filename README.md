@@ -64,9 +64,34 @@ de manera cuando se haga un **reset()** los valores se reestablecerán a los val
 onSave(): void {
     if (this.myForm.invalid) return;
     this.myForm.reset();
+}
 ````
-En el código anterior estamos usando el **reset()** para resetear el formulario y como agregamos la opción nonNullable, se reestablecerá a ´
+En el código anterior estamos usando el **reset()** para resetear el formulario y como **agregamos la opción nonNullable**, se reestablecerá a
 sus valores iniciales.
+
+Veamos un ejemplo aplicado a un control tomado de la web oficial de Angular, donde en el segundo apartado usamos la opción **nonNullable**. 
+``Si desea que este control no admita valores NULL, puede utilizar la opción nonNullable. Esto hará que el control se restablezca a su valor inicial, en lugar de nulo:``
+
+````typescript
+const dog = new FormControl('Nophy');
+const thatDog = dog.value; // 'Nopy'
+
+dog.reset();
+
+const whichDog = dog.value; // null
+
+----------------------------------------------------------
+Angular v14+ 
+----------------------------------------------------------
+const dog = new FormControl('Nophy', {nonNullable: true});
+const thatDog = dog.value; // 'Nopy'
+
+dog.reset();
+
+const whichDog = dog.value; // 'Nopy'
+
+````
+
 
 ## Métodos de ayuda para los errores
 
