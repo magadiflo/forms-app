@@ -17,6 +17,9 @@ export class DynamicPageComponent {
     ]),
   });
 
+  //* Necesario agregar la validación para que cuando se dé en el botón agregar, éste se evalúe con el if y no pase
+  public newFavorite: FormControl = new FormControl('', { nonNullable: true, validators: [Validators.required] });
+
   constructor(private _fb: FormBuilder) { }
 
   public get favoriteGames() {
@@ -29,8 +32,25 @@ export class DynamicPageComponent {
       this.myForm.markAllAsTouched();
       return;
     };
+
     console.log(this.myForm.value);
+
+    this.favoriteGames.clear();
     this.myForm.reset();
+  }
+
+  onAddToFavorites(): void {
+    if (this.newFavorite.invalid) return;
+
+    //* No mandamos directamente al arreglo el newFavorite ya que podríamos mantener la referencia de la variable dentro del arreglo
+    //* y eso podría traer problemas más adelante. Entonces, se opta por crear un nuevo objeto (formControl) y pasarle el valor del newFavorite
+
+    console.log(this.newFavorite.value);
+    const newGame = this.newFavorite.value;
+
+    //*Con el this._fb.control(), creamos un new FormControl, usando FormBuilder
+    this.favoriteGames.push(this._fb.control(newGame, [Validators.required]));
+    this.newFavorite.reset();
   }
 
   onDeleteFavorite(index: number): void {
@@ -56,6 +76,22 @@ export class DynamicPageComponent {
         case 'required': return `El campo "${field}" es requerido.`;
         case 'minlength': return `El campo "${field}" requiere mínimo ${errors['minlength'].requiredLength} caracteres.`;
         case 'min': return `El campo "${field}" requiere como valor mínimo ${errors['min'].min}.`;
+      }
+    }
+
+    return Object.entries(errors).length === 0 ? '' : `El campo ${field} contiene un valor incorrecto.`;
+  }
+
+  getErrorMessageArray(formArray: FormArray, index: number): string {
+    const control = formArray.controls[index];
+    const errors = control.errors || {};
+    const field = '';
+
+    for (const key of Object.keys(errors)) {
+      switch (key) {
+        case 'required': return `El campo ${field} es requerido.`;
+        case 'minlength': return `El campo ${field} requiere mínimo ${errors['minlength'].requiredLength} caracteres.`;
+        case 'min': return `El campo ${field} requiere como valor mínimo ${errors['min'].min}.`;
       }
     }
 

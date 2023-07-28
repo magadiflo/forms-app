@@ -20,10 +20,10 @@
     <div class="col-sm-9">
 
       <div class="input-group">
-        <input class="form-control" placeholder="Agregar favorito">
+        <input class="form-control" [formControl]="newFavorite" placeholder="Agregar favorito">
 
 
-        <button class="btn btn-outline-primary" type="button">
+        <button (click)="onAddToFavorites()" class="btn btn-outline-primary" type="button">
           Agregar favorito
         </button>
       </div>
@@ -46,7 +46,7 @@
           </button>
         </div>
         <span *ngIf="isNotValidFieldArray(favoriteGames, i)" class="form-text text-danger">
-          Este campo del array es requerido
+          {{ getErrorMessageArray(favoriteGames, i) }}
         </span>
 
       </div>
@@ -79,5 +79,5 @@
 <br>
 
 <span>Agregar Juego</span>
-<pre>{{ myForm.controls['favoriteGames'].value | json }}</pre>
-<pre>{{ 'object' | json }}</pre>
+<pre>{{ newFavorite.value | json }}</pre>
+<pre>{{ newFavorite.valid | json }}</pre>
