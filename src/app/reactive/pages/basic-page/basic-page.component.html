@@ -77,16 +77,22 @@
     <b>Value</b>
     <pre>{{ myForm.value | json }}</pre>
 
+    <b>Producto</b>
+    <pre>{{ myForm.controls['name'].value | json }}</pre>
+
+    <b>Producto - Errors</b>
+    <pre>{{ myForm.controls['name'].errors | json }}</pre>
+
     <b>Precio</b>
     <pre>{{ myForm.controls['price'].value | json }}</pre>
 
     <b>Precio - Errors</b>
     <pre>{{ myForm.controls['price'].errors | json }}</pre>
 
-    <b>Producto</b>
-    <pre>{{ myForm.controls['name'].value | json }}</pre>
+    <b>inStorage</b>
+    <pre>{{ myForm.controls['inStorage'].value | json }}</pre>
 
-    <b>Producto - Errors</b>
-    <pre>{{ myForm.controls['name'].errors | json }}</pre>
+    <b>inStorage - Errors</b>
+    <pre>{{ myForm.controls['inStorage'].errors | json }}</pre>
   </div>
 </div>

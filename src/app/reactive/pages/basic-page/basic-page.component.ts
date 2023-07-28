@@ -9,7 +9,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 })
 export class BasicPageComponent {
 
-  public myForm: FormGroup = this._fb.group({
+  public myForm: FormGroup = this._fb.nonNullable.group({
     name: ['', [Validators.required, Validators.minLength(3)]],
     price: [0, [Validators.required, Validators.min(0)]],
     inStorage: [0, [Validators.required, Validators.min(0)]],
@@ -18,8 +18,9 @@ export class BasicPageComponent {
   constructor(private _fb: FormBuilder) { }
 
   onSave(): void {
-    if(this.myForm.invalid) return;
+    if (this.myForm.invalid) return;
     console.log(this.myForm.value);
+    this.myForm.reset();
   }
 
 }
