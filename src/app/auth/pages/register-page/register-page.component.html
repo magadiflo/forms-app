@@ -12,7 +12,7 @@
         <div class="col-sm-9">
           <input type="text" formControlName="name" class="form-control" placeholder="Nombre del usuario">
 
-          <span class="form-text text-danger">
+          <span *ngIf="isNotValidField('name')" class="form-text text-danger">
             Debe de ser en formato de nombre y apellido
           </span>
         </div>
@@ -23,7 +23,7 @@
         <label class="col-sm-3 col-form-label">Email</label>
         <div class="col-sm-9">
           <input type="email" formControlName="email" class="form-control" placeholder="Email del usuario">
-          <span class="form-text text-danger">
+          <span *ngIf="isNotValidField('email')" class="form-text text-danger">
             mensaje de error del email
           </span>
         </div>
@@ -34,7 +34,7 @@
         <label class="col-sm-3 col-form-label">Username</label>
         <div class="col-sm-9">
           <input type="text" formControlName="username" class="form-control" placeholder="Nombre código del usuario">
-          <span class="form-text text-danger">
+          <span *ngIf="isNotValidField('username')" class="form-text text-danger">
             El username no puede ser Strider
           </span>
         </div>
@@ -46,7 +46,7 @@
         <div class="col-sm-9">
           <input type="password" formControlName="password" class="form-control" placeholder="Password de su cuenta">
 
-          <span class="form-text text-danger">
+          <span *ngIf="isNotValidField('password')" class="form-text text-danger">
             La contraseña debe de ser mayor de 6 caracteres.
           </span>
         </div>
@@ -59,7 +59,7 @@
           <input type="password" formControlName="password-confirm" class="form-control"
             placeholder="Confirmar la contraseña">
 
-          <span class="form-text text-danger">
+          <span *ngIf="isNotValidField('password-confirm')" class="form-text text-danger">
             Las contraseñas deben de ser iguales
           </span>
         </div>
