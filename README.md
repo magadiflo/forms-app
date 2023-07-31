@@ -294,6 +294,8 @@ variable **formGroup** que es del tipo **AbstractControl**.
 > validadores, calcular el estado y restablecer el estado. También define las propiedades que se comparten entre todas
 > las subclases, como valor, válido y sucio. No debe ser instanciado directamente.
 
+### Solución de Fernando Herrera para validar si dos campos son iguales
+
 Finalmente, la función completa que evalúa si dos campos son iguales o no:
 
 ````typescript
@@ -314,3 +316,49 @@ public isFieldOneEqualFieldTwo(fieldOne: string, fieldTwo: string) {
   }
 }
 ````
+
+### Mi solución para validar si dos campos son iguales
+
+En la solución de Fernando Herrera, únicamente se evalúa si los campos no son iguales y eso está bien, pero en su 
+solución siempre está retornando esa única validación **o es { notEqual: true } o es null.** Pero si vamos a nuestro 
+formulario donde tenemos el control del **password-confirm** veremos lo siguiente:
+
+```typescript
+public myForm: FormGroup = this._fb.group({
+    'password-confirm': ['', [Validators.required, Validators.minLength(6)]],
+  },{/*...*/});
+```
+
+O sea, vemos que nuestro campo **password-confirm** incluye varios validadores, en nuestro caso agregamos dos más:
+**required y el minLength(6)**, pero con la validación que hace Fernando, siempre envía la validación 
+**{notEqual: true} o null**, mientras que las validaciones **required y  minLength(6)** se pierden.
+
+Para solucionar el problema, hice una modificación en el código de Fernando, para que nos retorne todas las 
+validaciones conforme se vayan produciendo los errores, por ejemplo: Si hace touch el campo password-confirm y
+luego sale, debería ocurrir la validación del **required** y si luego escribe, por ejemplo, 4 caracteres y luego sale, la 
+validación a ocurrir es el del **minLength(6)**, y finalmente si escribe 6 a más caracteres, allí recién debería
+evaluar nuestra validación del **notEquals**.
+
+```typescript
+public isFieldOneEqualFieldTwo(fieldOne: string, fieldTwo: string) {
+    return (form: AbstractControl): ValidationErrors | null => {
+      const pass1 = form.get(fieldOne)?.value;
+      const pass2 = form.get(fieldTwo)?.value;
+
+      const fieldTwoErrors = form.get(fieldTwo)?.errors;
+
+      if (fieldTwoErrors && !form.get(fieldTwo)?.hasError('notEqual')) {
+        form.get(fieldTwo)?.setErrors(fieldTwoErrors);
+        return fieldTwoErrors;
+      }
+
+      let error = null;
+      if (pass1 !== pass2) {
+        error = { notEqual: true };
+      }
+
+      form.get(fieldTwo)?.setErrors(error);
+      return error;
+    }
+  }
+```

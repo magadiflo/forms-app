@@ -47,7 +47,7 @@
           <input type="password" formControlName="password" class="form-control" placeholder="Password de su cuenta">
 
           <span *ngIf="isNotValidField('password')" class="form-text text-danger">
-            La contraseña debe de ser mayor de 6 caracteres.
+            {{ getErrorMessage('password') }}
           </span>
         </div>
       </div>
@@ -60,7 +60,7 @@
             placeholder="Confirmar la contraseña">
 
           <span *ngIf="isNotValidField('password-confirm')" class="form-text text-danger">
-            Las contraseñas deben de ser iguales
+            {{ getErrorMessage('password-confirm', 'password') }}
           </span>
         </div>
       </div>
@@ -97,10 +97,7 @@
 
 
 <h5>Password</h5>
-<pre>{{ myForm.controls['password'].value | json }}</pre>
-
-<h5>Confirmar</h5>
-<pre>{{ myForm.controls['password-confirm'].value | json }}</pre>
+<pre>{{ myForm.controls['password'].errors | json }}</pre>
 
 <h5>Confirmar</h5>
 <pre>{{ myForm.controls['password-confirm'].errors | json }}</pre>

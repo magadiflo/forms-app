@@ -19,15 +19,41 @@ export class ValidatorsService {
     return control && (control.errors || false) && control.touched;
   }
 
+  getErrorMessage(form: FormGroup, field: string): string {
+    return this.getErrorMessageTwoField(form, field);
+  }
+
+
+  getErrorMessageTwoField(form: FormGroup, field: string, field2?: string): string {
+    const control = form.controls[field];
+    const errors = control.errors || {};
+
+    for (const key of Object.keys(errors)) {
+      switch (key) {
+        case 'required': return `El campo ${field} es requerido.`;
+        case 'minlength': return `El campo ${field} requiere mínimo ${errors['minlength'].requiredLength} caracteres.`;
+        case 'min': return `El campo ${field} requiere como valor mínimo ${errors['min'].min}.`;
+        case 'notEqual': return `Los campos ${field} y ${field2} deben ser iguales.`;
+      }
+    }
+
+    return Object.entries(errors).length === 0 ? '' : `El campo ${field} contiene un valor incorrecto.`;
+  }
+
   public isFieldOneEqualFieldTwo(fieldOne: string, fieldTwo: string) {
     return (form: AbstractControl): ValidationErrors | null => {
-      const fieldOneValue = form.get(fieldOne)?.value;
-      const fieldTwoValue = form.get(fieldTwo)?.value;
+      const pass1 = form.get(fieldOne)?.value;
+      const pass2 = form.get(fieldTwo)?.value;
 
-      console.log({ fieldOneValue, fieldTwoValue });
+      const fieldTwoErrors = form.get(fieldTwo)?.errors;
+
+      if (fieldTwoErrors && !form.get(fieldTwo)?.hasError('notEqual')) {
+        form.get(fieldTwo)?.setErrors(fieldTwoErrors);
+        return fieldTwoErrors;
+      }
 
       let error = null;
-      if (fieldOneValue !== fieldTwoValue) {
+      if (pass1 !== pass2) {
         error = { notEqual: true };
       }
 

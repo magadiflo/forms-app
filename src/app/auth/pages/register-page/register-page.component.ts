@@ -5,9 +5,6 @@ import { ValidatorsService } from './../../../shared/services/validators.service
 import { EmailValidatorService } from './../../../shared/validators/email-validator.service';
 
 
-
-
-
 @Component({
   selector: 'app-register-page',
   templateUrl: './register-page.component.html',
@@ -21,7 +18,7 @@ export class RegisterPageComponent {
     email: ['', [Validators.required, Validators.pattern(ValidatorsService.emailPattern)], [this._emailValidatorService]],
     username: ['', [Validators.required, this._validatorsService.cantBeStrider]],
     password: ['', [Validators.required, Validators.minLength(6)]],
-    'password-confirm': ['', [Validators.required]],
+    'password-confirm': ['', [Validators.required, Validators.minLength(6)]],
   }, { // Este nuevo objeto es para validar a nivel de formulario.
     validators: [this._validatorsService.isFieldOneEqualFieldTwo('password', 'password-confirm')] // Las funciones que escribamos dentro de este validators, tendrán implícitamente todo el formulario
   });
@@ -37,6 +34,10 @@ export class RegisterPageComponent {
 
   isNotValidField(field: string) {
     return this._validatorsService.isNotValidField(this.myForm, field);
+  }
+
+  getErrorMessage(field: string, field2?: string): string {
+    return this._validatorsService.getErrorMessageTwoField(this.myForm, field, field2);
   }
 
 }
