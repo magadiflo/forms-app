@@ -223,3 +223,94 @@ this.person = newPerson;
 - **termsAndConditions:** Esto extrae el valor del atributo termsAndConditions del objeto **this.myForm.value** y **lo asigna a la variable termsAndConditions.**
 
 - **...newPerson:** El operador de propagación **...** se utiliza para **recopilar el resto de las propiedades en un nuevo objeto llamado newPerson.** Esto significa que **todas las demás propiedades del objeto this.myForm.value** que no se hayan extraído en variables anteriores (como termsAndConditions) **se agruparán en newPerson.**
+
+
+## Verificar que dos campos sean iguales
+
+Antes de ver la validación de los campos iguales, veamos lo siguiente:
+
+````typescript
+public myForm: FormGroup = this._fb.group({
+    name: ['', [Validators.required, Validators.pattern(ValidatorsService.firstNameAndLastnamePattern)]], // Validaciones aplicadas a nivel de control control
+    email: ['', [Validators.required, Validators.pattern(ValidatorsService.emailPattern)], [this._emailValidatorService]],
+    username: ['', [Validators.required, this._validatorsService.cantBeStrider]],
+    password: ['', [Validators.required, Validators.minLength(6)]],
+    'password-confirm': ['', [Validators.required]],
+  }, { // Este nuevo objeto es para validar a nivel de formulario.
+    validators: [ ] // Las funciones que escribamos dentro de este validators, tendrán implícitamente todo el formulario
+  });
+````
+
+### Validaciones a nivel de control
+
+En el código anterior podemos observar que cada campo tiene sus propias validaciones, a eso le llamaremos 
+**validaciones (síncronas o asíncronas) a nivel de control**. Por ejemplo:
+
+````typescript
+email: ['', [Validators.required, Validators.pattern(ValidatorsService.emailPattern)], [this._emailValidatorService]],
+````
+Observamos que las validaciones aplicadas al campo **email** solo serán para el campo **email**, y no a los otros 
+controles (otros campos).
+
+### Validaciones a nivel de formulario
+
+Observando el código del formulario proporcionado, vemos que luego del objeto que contiene todos los campos 
+del formulario, agregamos otro objeto, ese nuevo objeto será para **realizar validaciones a nivel de formulario**.
+Además, estamos usando la key **validators** de ese objeto para realizar nuestras validaciones **síncronas**. 
+Todas las funciones de validación que escribamos dentro del arreglo de **validators** 
+**tendrán implícitamente todo el formulario y sus campos.**
+
+### ¿Por qué utilizaremos la validación a nivel de formulario para validar las contraseñas iguales?
+
+Porque para realizar la validación de contraseñas iguales **requerimos dos campos (password y password-confirm)**.
+
+### Agregando validador a nivel de formulario
+
+En nuestro ejemplo, vamos a verificar si los campos de las contraseñas son iguales, para eso creamos una función en
+en nuestro servicio y le pasamos el nombre de nuestros campos a validar.
+
+````typescript
+{
+  validators: [this._validatorsService.isFieldOneEqualFieldTwo('password', 'password-confirm')]
+});
+````
+
+En nuestro servicio definimos la función anterior tal como sigue:
+
+````typescript
+public isFieldOneEqualFieldTwo(fieldOne: string, fieldTwo: string) {
+    return (formGroup: AbstractControl): ValidationErrors | null => {
+      return null;
+    }
+}
+````
+Ahora, como decíamos la función **tendrá de manera implícita todo el formulario y sus campos** y eso lo podemos
+observar en la función anterior, vemos que el return está devolviendo una función del tipo 
+**ValidationErrors | null**, pero que recibe **implícitamente** por parámetro el formulario completo en la
+variable **formGroup** que es del tipo **AbstractControl**. 
+
+> **AbstractControl:** Esta es la **clase base para FormControl, FormGroup y FormArray.**
+> Proporciona parte del comportamiento compartido que tienen todos los controles y grupos de controles, como ejecutar
+> validadores, calcular el estado y restablecer el estado. También define las propiedades que se comparten entre todas
+> las subclases, como valor, válido y sucio. No debe ser instanciado directamente.
+
+Finalmente, la función completa que evalúa si dos campos son iguales o no:
+
+````typescript
+public isFieldOneEqualFieldTwo(fieldOne: string, fieldTwo: string) {
+  return (form: AbstractControl): ValidationErrors | null => {
+    const fieldOneValue = form.get(fieldOne)?.value;
+    const fieldTwoValue = form.get(fieldTwo)?.value;
+
+    console.log({ fieldOneValue, fieldTwoValue });
+
+    let error = null;
+    if (fieldOneValue !== fieldTwoValue) {
+      error = { notEqual: true };
+    }
+
+    form.get(fieldTwo)?.setErrors(error); // El campo 2 será el que recibirá el error
+    return error;
+  }
+}
+````

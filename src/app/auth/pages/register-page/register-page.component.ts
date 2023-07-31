@@ -22,6 +22,8 @@ export class RegisterPageComponent {
     username: ['', [Validators.required, this._validatorsService.cantBeStrider]],
     password: ['', [Validators.required, Validators.minLength(6)]],
     'password-confirm': ['', [Validators.required]],
+  }, { // Este nuevo objeto es para validar a nivel de formulario.
+    validators: [this._validatorsService.isFieldOneEqualFieldTwo('password', 'password-confirm')] // Las funciones que escribamos dentro de este validators, tendrán implícitamente todo el formulario
   });
 
   constructor(
