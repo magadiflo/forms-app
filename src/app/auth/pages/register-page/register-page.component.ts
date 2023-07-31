@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 import { ValidatorsService } from './../../../shared/services/validators.service';
+import { EmailValidatorService } from './../../../shared/validators/email-validator.service';
+
 
 
 
@@ -16,7 +18,7 @@ export class RegisterPageComponent {
 
   public myForm: FormGroup = this._fb.group({
     name: ['', [Validators.required, Validators.pattern(ValidatorsService.firstNameAndLastnamePattern)]],
-    email: ['', [Validators.required, Validators.pattern(ValidatorsService.emailPattern)]],
+    email: ['', [Validators.required, Validators.pattern(ValidatorsService.emailPattern)], [this._emailValidatorService]],
     username: ['', [Validators.required, this._validatorsService.cantBeStrider]],
     password: ['', [Validators.required, Validators.minLength(6)]],
     'password-confirm': ['', [Validators.required]],
@@ -24,7 +26,8 @@ export class RegisterPageComponent {
 
   constructor(
     private _fb: FormBuilder,
-    private _validatorsService: ValidatorsService) { }
+    private _validatorsService: ValidatorsService,
+    private _emailValidatorService: EmailValidatorService) { }
 
   onSave(): void {
     this.myForm.markAllAsTouched();
