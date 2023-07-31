@@ -180,3 +180,185 @@ export class BasicPageComponent {
 - **(3)** es similar al punto **(2)**, pero en este caso si el **control.errors es null** el valor que se asignará a la constante errors será el objeto vacío **{}**.
 - **(4)** el **Object.entries(mi-objeto)** devuelve un array de valores/clave de las propiedades enumerables de un objeto. Y si en el **(3)** la constante **errors**
   toma el objeto vacío **{}**, entonces con el código que estamos colocando en este punto **(4)** sí sería igual a **cero (0)**.
+
+# Sección: Validaciones
+
+## Validators.required vs Validators.requiredTrue
+
+**Validators.required**, este validador requiere que el control tenga un valor no vacío. Ahora, en el caso de que estemos usando un **checkbox** como en el formulario de la página de los **switches** y tengamos un campo
+en nuestro formulario reactivo que tenga la validación **Validators.required** y esté apuntando a este **checkbox**, lo que indicará sera que en el campo del input checkbox **tiene que haber un valor, ya sea true (seleccionado) o false (no seleccionado)**, pero no puede estar vacío o en este caso no puede ser null. El null podría darse cuando nosotros mismos asignamos ese valor como valor inicial del campo.
+
+Parte del formulario html
+````html
+<input type="checkbox" formControlName="wantNotifications">
+````
+Parte del formulario reactivo
+````typescript
+wantNotifications: [true, Validators.required],
+````
+
+**Validators.requiredTrue**, este validador requiere que el valor del control sea verdadero. **Este validador se usa comúnmente para las casillas de verificación requeridas.** En pocas palabras, este validador nos dice que el input checkbox **tiene que estar sí o sí en true (seleccionada).**
+
+Parte del formulario html
+````html
+<input type="checkbox" formControlName="termsAndConditions"">
+````
+Parte del formulario reactivo
+````typescript
+termsAndConditions: [false, Validators.requiredTrue]
+````
+
+## Destructuración de objetos
+
+En el componente de typescript **SwitchesPageComponent** usamos el siguiente código para destructurar el objeto del valor del formulario:
+
+
+````typescript
+const { termsAndConditions, ...newPerson } = this.myForm.value;
+this.person = newPerson;
+````
+
+**{ termsAndConditions, ...newPerson }:** La destructuración de objetos se utiliza para extraer propiedades específicas de un objeto en variables independientes. Aquí, tenemos dos partes de la destructuración:
+
+- **termsAndConditions:** Esto extrae el valor del atributo termsAndConditions del objeto **this.myForm.value** y **lo asigna a la variable termsAndConditions.**
+
+- **...newPerson:** El operador de propagación **...** se utiliza para **recopilar el resto de las propiedades en un nuevo objeto llamado newPerson.** Esto significa que **todas las demás propiedades del objeto this.myForm.value** que no se hayan extraído en variables anteriores (como termsAndConditions) **se agruparán en newPerson.**
+
+
+## Verificar que dos campos sean iguales
+
+Antes de ver la validación de los campos iguales, veamos lo siguiente:
+
+````typescript
+public myForm: FormGroup = this._fb.group({
+    name: ['', [Validators.required, Validators.pattern(ValidatorsService.firstNameAndLastnamePattern)]], // Validaciones aplicadas a nivel de control control
+    email: ['', [Validators.required, Validators.pattern(ValidatorsService.emailPattern)], [this._emailValidatorService]],
+    username: ['', [Validators.required, this._validatorsService.cantBeStrider]],
+    password: ['', [Validators.required, Validators.minLength(6)]],
+    'password-confirm': ['', [Validators.required]],
+  }, { // Este nuevo objeto es para validar a nivel de formulario.
+    validators: [ ] // Las funciones que escribamos dentro de este validators, tendrán implícitamente todo el formulario
+  });
+````
+
+### Validaciones a nivel de control
+
+En el código anterior podemos observar que cada campo tiene sus propias validaciones, a eso le llamaremos 
+**validaciones (síncronas o asíncronas) a nivel de control**. Por ejemplo:
+
+````typescript
+email: ['', [Validators.required, Validators.pattern(ValidatorsService.emailPattern)], [this._emailValidatorService]],
+````
+Observamos que las validaciones aplicadas al campo **email** solo serán para el campo **email**, y no a los otros 
+controles (otros campos).
+
+### Validaciones a nivel de formulario
+
+Observando el código del formulario proporcionado, vemos que luego del objeto que contiene todos los campos 
+del formulario, agregamos otro objeto, ese nuevo objeto será para **realizar validaciones a nivel de formulario**.
+Además, estamos usando la key **validators** de ese objeto para realizar nuestras validaciones **síncronas**. 
+Todas las funciones de validación que escribamos dentro del arreglo de **validators** 
+**tendrán implícitamente todo el formulario y sus campos.**
+
+### ¿Por qué utilizaremos la validación a nivel de formulario para validar las contraseñas iguales?
+
+Porque para realizar la validación de contraseñas iguales **requerimos dos campos (password y password-confirm)**.
+
+### Agregando validador a nivel de formulario
+
+En nuestro ejemplo, vamos a verificar si los campos de las contraseñas son iguales, para eso creamos una función en
+en nuestro servicio y le pasamos el nombre de nuestros campos a validar.
+
+````typescript
+{
+  validators: [this._validatorsService.isFieldOneEqualFieldTwo('password', 'password-confirm')]
+});
+````
+
+En nuestro servicio definimos la función anterior tal como sigue:
+
+````typescript
+public isFieldOneEqualFieldTwo(fieldOne: string, fieldTwo: string) {
+    return (formGroup: AbstractControl): ValidationErrors | null => {
+      return null;
+    }
+}
+````
+Ahora, como decíamos la función **tendrá de manera implícita todo el formulario y sus campos** y eso lo podemos
+observar en la función anterior, vemos que el return está devolviendo una función del tipo 
+**ValidationErrors | null**, pero que recibe **implícitamente** por parámetro el formulario completo en la
+variable **formGroup** que es del tipo **AbstractControl**. 
+
+> **AbstractControl:** Esta es la **clase base para FormControl, FormGroup y FormArray.**
+> Proporciona parte del comportamiento compartido que tienen todos los controles y grupos de controles, como ejecutar
+> validadores, calcular el estado y restablecer el estado. También define las propiedades que se comparten entre todas
+> las subclases, como valor, válido y sucio. No debe ser instanciado directamente.
+
+### Solución de Fernando Herrera para validar si dos campos son iguales
+
+Finalmente, la función completa que evalúa si dos campos son iguales o no:
+
+````typescript
+public isFieldOneEqualFieldTwo(fieldOne: string, fieldTwo: string) {
+  return (form: AbstractControl): ValidationErrors | null => {
+    const fieldOneValue = form.get(fieldOne)?.value;
+    const fieldTwoValue = form.get(fieldTwo)?.value;
+
+    console.log({ fieldOneValue, fieldTwoValue });
+
+    let error = null;
+    if (fieldOneValue !== fieldTwoValue) {
+      error = { notEqual: true };
+    }
+
+    form.get(fieldTwo)?.setErrors(error); // El campo 2 será el que recibirá el error
+    return error;
+  }
+}
+````
+
+### Mi solución para validar si dos campos son iguales
+
+En la solución de Fernando Herrera, únicamente se evalúa si los campos no son iguales y eso está bien, pero en su 
+solución siempre está retornando esa única validación **o es { notEqual: true } o es null.** Pero si vamos a nuestro 
+formulario donde tenemos el control del **password-confirm** veremos lo siguiente:
+
+```typescript
+public myForm: FormGroup = this._fb.group({
+    'password-confirm': ['', [Validators.required, Validators.minLength(6)]],
+  },{/*...*/});
+```
+
+O sea, vemos que nuestro campo **password-confirm** incluye varios validadores, en nuestro caso agregamos dos más:
+**required y el minLength(6)**, pero con la validación que hace Fernando, siempre envía la validación 
+**{notEqual: true} o null**, mientras que las validaciones **required y  minLength(6)** se pierden.
+
+Para solucionar el problema, hice una modificación en el código de Fernando, para que nos retorne todas las 
+validaciones conforme se vayan produciendo los errores, por ejemplo: Si hace touch el campo password-confirm y
+luego sale, debería ocurrir la validación del **required** y si luego escribe, por ejemplo, 4 caracteres y luego sale, la 
+validación a ocurrir es el del **minLength(6)**, y finalmente si escribe 6 a más caracteres, allí recién debería
+evaluar nuestra validación del **notEquals**.
+
+```typescript
+public isFieldOneEqualFieldTwo(fieldOne: string, fieldTwo: string) {
+    return (form: AbstractControl): ValidationErrors | null => {
+      const pass1 = form.get(fieldOne)?.value;
+      const pass2 = form.get(fieldTwo)?.value;
+
+      const fieldTwoErrors = form.get(fieldTwo)?.errors;
+
+      if (fieldTwoErrors && !form.get(fieldTwo)?.hasError('notEqual')) {
+        form.get(fieldTwo)?.setErrors(fieldTwoErrors);
+        return fieldTwoErrors;
+      }
+
+      let error = null;
+      if (pass1 !== pass2) {
+        error = { notEqual: true };
+      }
+
+      form.get(fieldTwo)?.setErrors(error);
+      return error;
+    }
+  }
+```
