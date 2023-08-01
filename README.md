@@ -393,3 +393,61 @@ export class SelectorPageComponent implements OnInit, OnDestroy {
 En el ejemplo anterior, estamos realizando un **subcribe()** al campo del formulario llamado **region** que es un **selector**. Podemos realizar ese
 subscribe ya que el **valueChanges** es un **Observable** y se disparará cada vez que el campo **region** detecte cambios. El subscribe lo podemos almacenar en una
 variable del tipo **Subscription** que luego en el método **ngOnDestroy()** lo utilizamos para realizar el **unsubscribe()**.
+
+## Http Client Module - ¿Dónde realizar la importación de este módulo?
+
+En este apartado quiero remarcar **dónde debemos hacer la importación del HttpClientModule** para trabajar con el **HttpClient** dentro de nuestro servicio **CountriesService**.
+
+Observemos nuestra clase de servicio que ya tiene inyectada el **HttpClient** por constructor:
+
+````typescript
+@Injectable({
+  providedIn: 'root' //<-- Provee el servicio a nivel global o raíz del proyecto
+})
+export class CountriesService {
+
+  constructor(private _http: HttpClient) { } //<--- Inyectando el HttpClient
+
+}
+````
+Como observamos en el código anterior, **Angular hará inyección de dependencia del HttpClient vía constructor.** Esta clase nos permite realizar peticiones http hacia el backend, pero para que funcione debemos hacer la importación del **HttpClientModule**, la pregunta es **¿dónde debemos hacer la importación de ese módulo?**.
+
+Como nuestra clase de servicio **CountriesService** tiene la anotación **@Injectable()** con un **providedIn: 'root'** eso significa que el módulo **sí o sí debe estar importada en el app.module.ts** ya que es el módulo raíz y a eso hace referencia el **root**.
+
+Recordemos que nuestro servicio **CountriesService está dentro del directorio /countries** y dicho directorio tiene su propio módulo **countries.module.ts**, la pregunta es **¿por qué no improtar el HttpClientModule en dicho módulo?**, la respuesta es que si hacemos eso, ocurrirá el siguiente error:
+
+````bash
+src_app_countries_countries_module_ts.js:2  ERROR Error: Uncaught (in promise): NullInjectorError: R3InjectorError(CountriesModule)[CountriesService -> CountriesService -> HttpClient -> HttpClient]: 
+  NullInjectorError: No provider for HttpClient!
+NullInjectorError: R3InjectorError(CountriesModule)[CountriesService -> CountriesService -> HttpClient -> HttpClient]: 
+  NullInjectorError: No provider for HttpClient!
+````
+
+El error ocurre porque nuestro **CountriesService** no está definido a nivel del módulo **countries.module.ts** sino a **nivel raíz (root)** es por eso que cuando trata de inyectar el **HttpClient** no lo encuentra definido en el módulo **app.module.ts**. Ahora, si quisiéramos que el **CountriesService** esté definido a nivel del módulo donde se vaya a usar, en nuestro caso, por ejemplo definirlo a nivel del módulo **countries.module.ts** y no a nivel global (root) lo que podríamos hacer sería utilizar la anotación ``@Injectable()`` **sin el atributo providedIn='root'** y ahora para registrarlo en el módulo **countries.module.ts** debemos agregarlo en la opción de providers, veamos el ejemplo:
+
+
+````typescript
+@Injectable() // <-- Sin el atributo providedIn='root'
+export class CountriesService {
+
+  constructor(private _http: HttpClient) { }  //<--- Inyectando el HttpClient
+
+}
+````
+````typescript
+import { CountriesService } from './services/countries.service';
+
+
+@NgModule({
+  declarations: [
+  ],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    CountriesRoutingModule,
+    HttpClientModule            //<-- Importamos el módulo HttpClientModule que será usado en este módulo CountriesModule
+  ],
+  providers: [CountriesService] //<-- Declaramos el servicio que usaremos en este módulo
+})
+export class CountriesModule { }
+````

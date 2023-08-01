@@ -1,9 +1,9 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { Subscription, switchMap } from 'rxjs';
 
 import { CountriesService } from '../../services/countries.service';
-import { Region } from '../../interfaces/country.interfaces';
+import { Region, SmallCountry } from '../../interfaces/country.interfaces';
 
 @Component({
   selector: 'app-selector-page',
@@ -39,8 +39,11 @@ export class SelectorPageComponent implements OnInit, OnDestroy {
 
   private _onRegionChange(): void {
     this._regionSubscription$ = this.myForm.get('region')?.valueChanges
-      .subscribe(region => {
-        console.log({ region });
+      .pipe(
+        switchMap(region => this._countriesService.getCountriesByRegion(region))
+      )
+      .subscribe((countries: SmallCountry[]) => {
+        console.log({ countries });
       });
   }
 
