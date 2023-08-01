@@ -362,3 +362,34 @@ public isFieldOneEqualFieldTwo(fieldOne: string, fieldTwo: string) {
     }
   }
 ```
+
+# Sección: Formularios Reactivos - Múltiples selectores anidados
+
+## Unsubscribe de la subscripción al observable
+
+En Angular, cuando te suscribes a un observable utilizando el método subscribe(), es importante asegurarte de **desuscribirte (unsubscribe) adecuadamente para evitar pérdidas de memoria y potenciales problemas de rendimiento.** La desuscripción se realiza para liberar los recursos asociados al observable y evitar que continúe emitiendo valores cuando ya no es necesario.
+
+Una forma de poder desubscribirnos de un observable es **almacenando la subcripción en una variable del tipo Subscription** luego utilizar el método del ciclo de vida **onDestroy()** para realizar la desubscripción:
+
+````typescript
+export class SelectorPageComponent implements OnInit, OnDestroy {
+
+  private _regionSubscription$: Subscription | undefined;
+  public myForm: FormGroup = this._fb.nonNullable.group({/* more code */});
+
+  ngOnInit(): void {
+    this._regionSubscription$ = this.myForm.get('region')?.valueChanges
+      .subscribe(region => {
+        console.log({ region });
+      });
+  }
+
+  ngOnDestroy(): void {
+    this._regionSubscription$?.unsubscribe();
+  }
+}
+````
+
+En el ejemplo anterior, estamos realizando un **subcribe()** al campo del formulario llamado **region** que es un **selector**. Podemos realizar ese
+subscribe ya que el **valueChanges** es un **Observable** y se disparará cada vez que el campo **region** detecte cambios. El subscribe lo podemos almacenar en una
+variable del tipo **Subscription** que luego en el método **ngOnDestroy()** lo utilizamos para realizar el **unsubscribe()**.

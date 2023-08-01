@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Subscription } from 'rxjs';
 
 import { CountriesService } from '../../services/countries.service';
 import { Region } from '../../interfaces/country.interfaces';
@@ -10,7 +11,9 @@ import { Region } from '../../interfaces/country.interfaces';
   styles: [
   ]
 })
-export class SelectorPageComponent {
+export class SelectorPageComponent implements OnInit, OnDestroy {
+
+  private _regionSubscription$: Subscription | undefined;
 
   public myForm: FormGroup = this._fb.nonNullable.group({
     region: ['', [Validators.required]],
@@ -22,9 +25,23 @@ export class SelectorPageComponent {
     return this._countriesService.regions;
   }
 
-
   constructor(
     private _fb: FormBuilder,
     private _countriesService: CountriesService) { }
+
+  ngOnInit(): void {
+    this._onRegionChange();
+  }
+
+  ngOnDestroy(): void {
+    this._regionSubscription$?.unsubscribe();
+  }
+
+  private _onRegionChange(): void {
+    this._regionSubscription$ = this.myForm.get('region')?.valueChanges
+      .subscribe(region => {
+        console.log({ region });
+      });
+  }
 
 }
