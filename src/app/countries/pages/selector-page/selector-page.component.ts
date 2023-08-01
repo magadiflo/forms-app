@@ -1,6 +1,9 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
+import { CountriesService } from '../../services/countries.service';
+import { Region } from '../../interfaces/country.interfaces';
+
 @Component({
   selector: 'app-selector-page',
   templateUrl: './selector-page.component.html',
@@ -15,6 +18,13 @@ export class SelectorPageComponent {
     borders: ['', [Validators.required]],
   });
 
-  constructor(private _fb: FormBuilder) { }
+  public get regions(): Region[] {
+    return this._countriesService.regions;
+  }
+
+
+  constructor(
+    private _fb: FormBuilder,
+    private _countriesService: CountriesService) { }
 
 }
