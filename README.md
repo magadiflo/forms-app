@@ -362,3 +362,309 @@ public isFieldOneEqualFieldTwo(fieldOne: string, fieldTwo: string) {
     }
   }
 ```
+
+# Sección: Formularios Reactivos - Múltiples selectores anidados
+
+## Unsubscribe de la subscripción al observable
+
+En Angular, cuando te suscribes a un observable utilizando el método subscribe(), es importante asegurarte de **desuscribirte (unsubscribe) adecuadamente para evitar pérdidas de memoria y potenciales problemas de rendimiento.** La desuscripción se realiza para liberar los recursos asociados al observable y evitar que continúe emitiendo valores cuando ya no es necesario.
+
+Una forma de poder desubscribirnos de un observable es **almacenando la subcripción en una variable del tipo Subscription** luego utilizar el método del ciclo de vida **onDestroy()** para realizar la desubscripción:
+
+````typescript
+export class SelectorPageComponent implements OnInit, OnDestroy {
+
+  private _regionSubscription$: Subscription | undefined;
+  public myForm: FormGroup = this._fb.nonNullable.group({/* more code */});
+
+  ngOnInit(): void {
+    this._regionSubscription$ = this.myForm.get('region')?.valueChanges
+      .subscribe(region => {
+        console.log({ region });
+      });
+  }
+
+  ngOnDestroy(): void {
+    this._regionSubscription$?.unsubscribe();
+  }
+}
+````
+
+En el ejemplo anterior, estamos realizando un **subcribe()** al campo del formulario llamado **region** que es un **selector**. Podemos realizar ese
+subscribe ya que el **valueChanges** es un **Observable** y se disparará cada vez que el campo **region** detecte cambios. El subscribe lo podemos almacenar en una
+variable del tipo **Subscription** que luego en el método **ngOnDestroy()** lo utilizamos para realizar el **unsubscribe()**.
+
+## Http Client Module - ¿Dónde realizar la importación de este módulo?
+
+En este apartado quiero remarcar **dónde debemos hacer la importación del HttpClientModule** para trabajar con el **HttpClient** dentro de nuestro servicio **CountriesService**.
+
+Observemos nuestra clase de servicio que ya tiene inyectada el **HttpClient** por constructor:
+
+````typescript
+@Injectable({
+  providedIn: 'root' //<-- Provee el servicio a nivel global o raíz del proyecto
+})
+export class CountriesService {
+
+  constructor(private _http: HttpClient) { } //<--- Inyectando el HttpClient
+
+}
+````
+Como observamos en el código anterior, **Angular hará inyección de dependencia del HttpClient vía constructor.** Esta clase nos permite realizar peticiones http hacia el backend, pero para que funcione debemos hacer la importación del **HttpClientModule**, la pregunta es **¿dónde debemos hacer la importación de ese módulo?**.
+
+Como nuestra clase de servicio **CountriesService** tiene la anotación **@Injectable()** con un **providedIn: 'root'** eso significa que el módulo **sí o sí debe estar importada en el app.module.ts** ya que es el módulo raíz y a eso hace referencia el **root**.
+
+Recordemos que nuestro servicio **CountriesService está dentro del directorio /countries** y dicho directorio tiene su propio módulo **countries.module.ts**, la pregunta es **¿por qué no improtar el HttpClientModule en dicho módulo?**, la respuesta es que si hacemos eso, ocurrirá el siguiente error:
+
+````bash
+src_app_countries_countries_module_ts.js:2  ERROR Error: Uncaught (in promise): NullInjectorError: R3InjectorError(CountriesModule)[CountriesService -> CountriesService -> HttpClient -> HttpClient]: 
+  NullInjectorError: No provider for HttpClient!
+NullInjectorError: R3InjectorError(CountriesModule)[CountriesService -> CountriesService -> HttpClient -> HttpClient]: 
+  NullInjectorError: No provider for HttpClient!
+````
+
+El error ocurre porque nuestro **CountriesService** no está definido a nivel del módulo **countries.module.ts** sino a **nivel raíz (root)** es por eso que cuando trata de inyectar el **HttpClient** no lo encuentra definido en el módulo **app.module.ts**. Ahora, si quisiéramos que el **CountriesService** esté definido a nivel del módulo donde se vaya a usar, en nuestro caso, por ejemplo definirlo a nivel del módulo **countries.module.ts** y no a nivel global (root) lo que podríamos hacer sería utilizar la anotación ``@Injectable()`` **sin el atributo providedIn='root'** y ahora para registrarlo en el módulo **countries.module.ts** debemos agregarlo en la opción de providers, veamos el ejemplo:
+
+
+````typescript
+@Injectable() // <-- Sin el atributo providedIn='root'
+export class CountriesService {
+
+  constructor(private _http: HttpClient) { }  //<--- Inyectando el HttpClient
+
+}
+````
+````typescript
+import { CountriesService } from './services/countries.service';
+
+
+@NgModule({
+  declarations: [
+  ],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    CountriesRoutingModule,
+    HttpClientModule            //<-- Importamos el módulo HttpClientModule que será usado en este módulo CountriesModule
+  ],
+  providers: [CountriesService] //<-- Declaramos el servicio que usaremos en este módulo
+})
+export class CountriesModule { }
+````
+
+## Convertir los países y mostrarlos en pantalla
+
+En el **countries.services.ts** definimos una primera función que nos retorna los paises según la región (continente) seleccionado. Analizaremos dicha función, pero antes es importante conocer el operador de **coalescencia nula (??)** de javascript, pues lo usamos en la función a analizar.
+
+### Operador de coalescencia nula (??)
+
+El operador **nullish coalescing (??) (de coalescencia nula)** es un operador lógico que **retorna el operando de lado derecho cuando el operando de lado izquierdo es null o undefined,** y en **caso contrario retorna el operando de lado izquierdo.**
+
+````typescript
+const foo = null ?? 'default string';
+console.log(foo);
+// Expected output: "default string"
+
+const name = undefined ?? 'tiene el nombre indefinido';
+console.log(name);
+// Expected output: "tiene el nombre indefinido"
+
+const baz = 0 ?? 42;
+console.log(baz);
+// Expected output: 0
+````
+
+Ahora analizaremos la función:
+````typescript
+@Injectable({
+  providedIn: 'root'
+})
+export class CountriesService {
+  /* other code */
+  getCountriesByRegion(region: Region): Observable<SmallCountry[]> { //(1)
+    if (!region) return of([]);
+    const params = new HttpParams().set('fields', 'cca3,name,borders');
+    return this._http.get<Country[]>(`${this._apiUrlCountries}/region/${region}`, { params }) //(2)
+      .pipe(
+        tap(countries => console.log({ countries })),
+        map(countries => countries.map(country => ({ name: country.name.common, cca3: country.cca3, borders: country.borders ?? [] }))), //(3)
+      )
+  }
+}
+````
+
+**(1)**, a función **nos debe retornar un arreglo de SmallCountry**. A continuación se muestra la fima de los datos precisos que nos debe retornar:
+````typescript
+export interface SmallCountry {
+  name: string;
+  cca3: string;
+  borders: string[];
+}
+````
+
+**(2)**, al hacer una petición a nuestro endpoint, este **nos retorna un arreglo de Country**, filtrando sus resultados por el **name, cca3 y borders** atributos similares a la firma de nuestro **SmallCountry**, pero con un detalle:
+````json
+{
+  "name": {
+      "common": "Peru",
+      "official": "Republic of Peru",
+      "nativeName": {
+          "aym": {
+              "official": "Piruw Suyu",
+              "common": "Piruw"
+          },
+          "que": {
+              "official": "Piruw Ripuwlika",
+              "common": "Piruw"
+          },
+          "spa": {
+              "official": "República del Perú",
+              "common": "Perú"
+          }
+      }
+  },
+  "cca3": "PER",
+  "borders": [
+      "BOL",
+      "BRA",
+      "CHL",
+      "COL",
+      "ECU"
+  ]
+}
+````
+El json anterior **corresponde a un elemento del arreglo de Country retornado del endpoint**, donde nos muestra los 3 atributos que necesita nuestro **SmallCountry**, pero además trae consigo más datos de los que requerimos como el **name.common, name.official, etc.** y eso sería contraproducente ya tendríamos más información de la que requerimos. Por lo tanto, es necesario realizar una conversion.
+
+**(3)** usamos el operador **map() de rxjs** para realizar la **conversión de un tipo de dato a otro (Country[] -> SmallCountry[])** a nivel de **Observable**. Ahora, 
+dentro del map **utilizamos el operador map() del arreglo** para realizar la conversión propiamente dicha. Observemos que en el atributo borders se utiliza lo siguiente:
+
+````javascript
+borders: country.borders ?? [] 
+````
+Aquí se está utilizando el operador de **coalescencia nula** ya que **country.borders** podría ser **nulo** y si eso sucede devolveremos un arreglo vacío.
+
+**CONCLUSIÓN**
+
+Estamos realizando una petición a un endpoint que nos retorna un arreglo de Country pero con datos adicionales que no requerimos. Por 
+lo tanto, realizamos una conversión utilizando los distintos **operadores de RxJs** y también los **operadores de los arreglos de javaScript**
+a fin de retornar solo los datos requeridos **(SmallCountry[]).**
+
+## Información de las fronteras - Formulario válido cuando un país no tiene frontereas
+
+En el componente **SelectorPageComponent** tenemos el método **_onCountryChange()** que internamente
+define el código que evalúa los cambios que ocurran en el campo **country** para solicitar al backend
+los países correspondientes a los bordes del país que se seleccionó. 
+
+**El problema ocurre cuando un país seleccionado no tiene bordes (fronteras).** El método anterior, hasta donde
+Fernando lo dejó, es hacer la petición al backend para traer los bordes del país seleccionado, y si el país
+no tiene bordes le dijimos al servicio que nos retorne un arreglo vacío. Pero recordemos que al momento de construir el formulario reactivo, establecimos la validación de que los tres campos deben ser requeridos:
+
+````typescript
+@Component({
+  selector: 'app-selector-page',
+  templateUrl: './selector-page.component.html',
+  styles: [
+  ]
+})
+export class SelectorPageComponent implements OnInit, OnDestroy {
+  /*other code*/
+  public myForm: FormGroup = this._fb.nonNullable.group({
+    region: ['', [Validators.required]],
+    country: ['', [Validators.required]],
+    border: ['', [Validators.required]],
+  });
+  /*other code*/
+}
+````
+Por lo tanto, si seleccionamos un país que no tiene fronteras, el formulario seguirá siendo inválido y eso no puede
+ser posible. El funcionamiento debería ser:
+
+- Si se selecciona un país que tiene bordes entonces el formulario será inválido hasta que se seleccione un borde, es decir, **los campos region, country y border del formulario serán requeridos.** 
+- Si se selecciona un país que no tiene bordes, automáticamente el formulario debería ser válido, es decir, **solo serán requeridos los campos region y country del formulario.**
+
+Entonces, para solucionar el problema detectado, tendremos que **agregar o eliminar dinámicamente**, en tiempo de ejecución los validadores para el campo **border**, según si un país seleccionado tenga o no bordes.
+
+
+````typescript
+@Component({
+  selector: 'app-selector-page',
+  templateUrl: './selector-page.component.html',
+  styles: [
+  ]
+})
+export class SelectorPageComponent implements OnInit, OnDestroy {
+  /*other code*/
+  public myForm: FormGroup = this._fb.nonNullable.group({
+    region: ['', [Validators.required]],
+    country: ['', [Validators.required]],
+    border: ['', [Validators.required]],
+  });
+
+   /*other code*/
+
+  private _onCountryChange(): void {
+    this._countrySubscription$ = this.myForm.get('country')?.valueChanges
+      .pipe(
+        tap(() => this.myForm.controls['border'].reset()),
+        filter((alphaCode: string) => alphaCode.trim().length > 0),
+        switchMap(alphaCode => this._countriesService.getCountryByAlphaCode(alphaCode)),
+        switchMap(country => this._countriesService.getCountryBordersByCodes(country.borders)),
+        tap(countries => countries.length > 0 ? this._addValidators('border', Validators.required) : this._removeValidators('border', Validators.required)), // (1) Cuando un país no tiene bordes, que el formulario sea válido
+      )
+      .subscribe(countries => {
+        this.borders = countries;
+      });
+  }
+
+  private _removeValidators(field: string, validators: ValidatorFn | ValidatorFn[]) {
+    this.myForm.controls[field].removeValidators(validators);
+    this._updateValueAndValidity(field);
+  }
+
+  private _addValidators(field: string, validators: ValidatorFn | ValidatorFn[]) {
+    this.myForm.controls[field].addValidators(validators);
+    this._updateValueAndValidity(field);
+  }
+
+  private _updateValueAndValidity(field: string) {
+    this.myForm.controls[field].updateValueAndValidity();
+  }  
+}
+````
+
+Como observamos en el código anterior, hemos **(1) agregado otro operador tap() de RxJs** para poder agregar o quitar dinámicamente los validadores al campo **border**. Centrémonos
+en ese código mencionado:
+
+````typescript
+tap(countries => countries.length > 0 ? this._addValidators('border', Validators.required) : this._removeValidators('border', Validators.required))
+````
+Lo que hago es ver si el arreglo tiene datos, si lo tiene pues **agrego el validador required** en caso contrario, lo elimino. Para agregar o eliminar
+he creado dos métodos, que recibe el campo al cual agregaré o eliminaré el validador (para futuras reutilizaciones). Finalmente, se creó un tercer método
+llamado **_updateValueAndValidity()*, que según la documentación de Angular, después de que hagamos una eliminación o agregación de validadores en tiempo
+de ejecución, debemos llamar al método **updateValueAndValidity()** para que se actualicen los validadores del campo.
+
+Listo, con esos cambios nuestro formulario será válido cuando se seleccione un país que no tiene bordes, mientras que si el país seleccionado tiene bordes,
+el formulario estará inválido hasta que se seleccione un borde.
+
+A continuación se explícan los [métodos de Angular](https://angular.io/api/forms/AbstractControl#addvalidators) utilizados:
+
+### addValidators()
+
+Agregue uno o varios validadores sincrónicos a este control, sin afectar a otros validadores.
+
+**NOTA**
+
+> Cuando **agrega o elimina** un validador en tiempo de ejecución, debe llamar a **updateValueAndValidity()**
+> para que la nueva validación surta efecto.
+
+**Agregar un validador que ya existe no tendrá ningún efecto.** Si hay funciones de validación duplicadas en la matriz de validadores, solo se agregará la primera instancia a un control de formulario.
+
+### removeValidators()
+
+Eliminar un validador síncrono de este control, sin afectar a otros validadores. Los validadores se comparan por referencia de función; 
+**debe pasar una referencia a la misma función de validación exacta que la que se configuró originalmente.** 
+``Si no se encuentra un validador proporcionado, se ignora.``
+
+### updateValueAndValidity()
+
+Recalcula el valor y el estado de validación del control.
