@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map, of, tap } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
@@ -19,12 +19,14 @@ export class CountriesService {
 
   constructor(private _http: HttpClient) { }
 
-  getCountriesByRegion(region: Region): Observable<SmallCountry[]> {
+
+  getCountriesByRegion(region: Region): Observable<SmallCountry[]> { //* Ver el README.md, se analiza esta función
     if (!region) return of([]);
     const params = new HttpParams().set('fields', 'cca3,name,borders');
-    return this._http.get<SmallCountry[]>(`${this._apiUrlCountries}/region/${region}`, { params })
+    return this._http.get<Country[]>(`${this._apiUrlCountries}/region/${region}`, { params })
       .pipe(
-        tap(res => console.log({ res })),
+        tap(countries => console.log({ countries })),
+        map(countries => countries.map(country => ({ name: country.name.common, cca3: country.cca3, borders: country.borders ?? [] }))),
       )
   }
 }

@@ -451,3 +451,100 @@ import { CountriesService } from './services/countries.service';
 })
 export class CountriesModule { }
 ````
+
+## Convertir los países y mostrarlos en pantalla
+
+En el **countries.services.ts** definimos una primera función que nos retorna los paises según la región (continente) seleccionado. Analizaremos dicha función, pero antes es importante conocer el operador de **coalescencia nula (??)** de javascript, pues lo usamos en la función a analizar.
+
+### Operador de coalescencia nula (??)
+
+El operador **nullish coalescing (??) (de coalescencia nula)** es un operador lógico que **retorna el operando de lado derecho cuando el operando de lado izquierdo es null o undefined,** y en **caso contrario retorna el operando de lado izquierdo.**
+
+````typescript
+const foo = null ?? 'default string';
+console.log(foo);
+// Expected output: "default string"
+
+const name = undefined ?? 'tiene el nombre indefinido';
+console.log(name);
+// Expected output: "tiene el nombre indefinido"
+
+const baz = 0 ?? 42;
+console.log(baz);
+// Expected output: 0
+````
+
+Ahora analizaremos la función:
+````typescript
+@Injectable({
+  providedIn: 'root'
+})
+export class CountriesService {
+  /* other code */
+  getCountriesByRegion(region: Region): Observable<SmallCountry[]> { //(1)
+    if (!region) return of([]);
+    const params = new HttpParams().set('fields', 'cca3,name,borders');
+    return this._http.get<Country[]>(`${this._apiUrlCountries}/region/${region}`, { params }) //(2)
+      .pipe(
+        tap(countries => console.log({ countries })),
+        map(countries => countries.map(country => ({ name: country.name.common, cca3: country.cca3, borders: country.borders ?? [] }))), //(3)
+      )
+  }
+}
+````
+
+**(1)**, a función **nos debe retornar un arreglo de SmallCountry**. A continuación se muestra la fima de los datos precisos que nos debe retornar:
+````typescript
+export interface SmallCountry {
+  name: string;
+  cca3: string;
+  borders: string[];
+}
+````
+
+**(2)**, al hacer una petición a nuestro endpoint, este **nos retorna un arreglo de Country**, filtrando sus resultados por el **name, cca3 y borders** atributos similares a la firma de nuestro **SmallCountry**, pero con un detalle:
+````json
+{
+  "name": {
+      "common": "Peru",
+      "official": "Republic of Peru",
+      "nativeName": {
+          "aym": {
+              "official": "Piruw Suyu",
+              "common": "Piruw"
+          },
+          "que": {
+              "official": "Piruw Ripuwlika",
+              "common": "Piruw"
+          },
+          "spa": {
+              "official": "República del Perú",
+              "common": "Perú"
+          }
+      }
+  },
+  "cca3": "PER",
+  "borders": [
+      "BOL",
+      "BRA",
+      "CHL",
+      "COL",
+      "ECU"
+  ]
+}
+````
+El json anterior **corresponde a un elemento del arreglo de Country retornado del endpoint**, donde nos muestra los 3 atributos que necesita nuestro **SmallCountry**, pero además trae consigo más datos de los que requerimos como el **name.common, name.official, etc.** y eso sería contraproducente ya tendríamos más información de la que requerimos. Por lo tanto, es necesario realizar una conversion.
+
+**(3)** usamos el operador **map() de rxjs** para realizar la **conversión de un tipo de dato a otro (Country[] -> SmallCountry[])** a nivel de **Observable**. Ahora, 
+dentro del map **utilizamos el operador map() del arreglo** para realizar la conversión propiamente dicha. Observemos que en el atributo borders se utiliza lo siguiente:
+
+````javascript
+borders: country.borders ?? [] 
+````
+Aquí se está utilizando el operador de **coalescencia nula** ya que **country.borders** podría ser **nulo** y si eso sucede devolveremos un arreglo vacío.
+
+**CONCLUSIÓN**
+
+Estamos realizando una petición a un endpoint que nos retorna un arreglo de Country pero con datos adicionales que no requerimos. Por 
+lo tanto, realizamos una conversión utilizando los distintos **operadores de RxJs** y también los **operadores de los arreglos de javaScript**
+a fin de retornar solo los datos requeridos **(SmallCountry[]).**

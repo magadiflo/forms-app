@@ -15,6 +15,7 @@ export class SelectorPageComponent implements OnInit, OnDestroy {
 
   private _regionSubscription$: Subscription | undefined;
 
+  public countriesByRegion: SmallCountry[] = [];
   public myForm: FormGroup = this._fb.nonNullable.group({
     region: ['', [Validators.required]],
     country: ['', [Validators.required]],
@@ -44,6 +45,7 @@ export class SelectorPageComponent implements OnInit, OnDestroy {
       )
       .subscribe((countries: SmallCountry[]) => {
         console.log({ countries });
+        this.countriesByRegion = countries;
       });
   }
 
