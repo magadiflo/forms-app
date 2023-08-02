@@ -16,7 +16,7 @@ export class SelectorPageComponent implements OnInit, OnDestroy {
   private _regionSubscription$: Subscription | undefined;
   private _countrySubscription$: Subscription | undefined;
 
-  public borders: string[] = [];
+  public borders: SmallCountry[] = [];
   public countriesByRegion: SmallCountry[] = [];
   public myForm: FormGroup = this._fb.nonNullable.group({
     region: ['', [Validators.required]],
@@ -59,11 +59,11 @@ export class SelectorPageComponent implements OnInit, OnDestroy {
       .pipe(
         tap(() => this.myForm.controls['border'].reset()),
         filter((alphaCode: string) => alphaCode.trim().length > 0), //* Solo hacemos la petición si no viene vacío
-        switchMap(alphaCode => this._countriesService.getCountryByAlphaCode(alphaCode))
+        switchMap(alphaCode => this._countriesService.getCountryByAlphaCode(alphaCode)),
+        switchMap(country => this._countriesService.getCountryBordersByCodes(country.borders)),
       )
-      .subscribe(country => {
-        console.log({ country });
-        this.borders = country.borders;
+      .subscribe(countries => {
+        this.borders = countries;
       });
   }
 

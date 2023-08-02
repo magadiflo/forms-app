@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, map, of, tap } from 'rxjs';
+import { Observable, combineLatest, map, of, tap } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { SmallCountry, Region, Country } from '../interfaces/country.interfaces';
@@ -36,6 +36,18 @@ export class CountriesService {
       .pipe(
         tap(country => console.log({ country })),
         map(country => ({ name: country.name.common, cca3: country.cca3, borders: country.borders ?? [] })),
-      )
+      );
+  }
+
+  getCountryBordersByCodes(borders: string[]): Observable<SmallCountry[]> {
+    if (!borders || borders.length === 0) return of([]);
+
+    const countriesRequests: Observable<SmallCountry>[] = [];   //* Arreglo de Observables, cada uno emitirá un objeto del tipo SmallCountry
+    borders.forEach(code => {
+      const request = this.getCountryByAlphaCode(code);         //* Almacenamos el request. Aún no hacemos la llamada. Si usáramos el .subscribe() allí sí.
+      countriesRequests.push(request);                          //* Por ahora, solo almacenamos las request.
+    });
+
+    return combineLatest(countriesRequests); //* combineLatest, regresa un arreglo con el producto de cada una de las peticiones internas
   }
 }
