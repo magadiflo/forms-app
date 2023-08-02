@@ -21,5 +21,8 @@ export class SideMenuComponent {
   public authMenu: MenuItem[] = [
     { title: 'Registro', route: './auth/register', },
   ];
+  public countriesMenu: MenuItem[] = [
+    { title: 'Selectores', route: './countries/selector', },
+  ];
 
 }
