@@ -548,3 +548,123 @@ Aquí se está utilizando el operador de **coalescencia nula** ya que **country.
 Estamos realizando una petición a un endpoint que nos retorna un arreglo de Country pero con datos adicionales que no requerimos. Por 
 lo tanto, realizamos una conversión utilizando los distintos **operadores de RxJs** y también los **operadores de los arreglos de javaScript**
 a fin de retornar solo los datos requeridos **(SmallCountry[]).**
+
+## Información de las fronteras - Formulario válido cuando un país no tiene frontereas
+
+En el componente **SelectorPageComponent** tenemos el método **_onCountryChange()** que internamente
+define el código que evalúa los cambios que ocurran en el campo **country** para solicitar al backend
+los países correspondientes a los bordes del país que se seleccionó. 
+
+**El problema ocurre cuando un país seleccionado no tiene bordes (fronteras).** El método anterior, hasta donde
+Fernando lo dejó, es hacer la petición al backend para traer los bordes del país seleccionado, y si el país
+no tiene bordes le dijimos al servicio que nos retorne un arreglo vacío. Pero recordemos que al momento de construir el formulario reactivo, establecimos la validación de que los tres campos deben ser requeridos:
+
+````typescript
+@Component({
+  selector: 'app-selector-page',
+  templateUrl: './selector-page.component.html',
+  styles: [
+  ]
+})
+export class SelectorPageComponent implements OnInit, OnDestroy {
+  /*other code*/
+  public myForm: FormGroup = this._fb.nonNullable.group({
+    region: ['', [Validators.required]],
+    country: ['', [Validators.required]],
+    border: ['', [Validators.required]],
+  });
+  /*other code*/
+}
+````
+Por lo tanto, si seleccionamos un país que no tiene fronteras, el formulario seguirá siendo inválido y eso no puede
+ser posible. El funcionamiento debería ser:
+
+- Si se selecciona un país que tiene bordes entonces el formulario será inválido hasta que se seleccione un borde, es decir, **los campos region, country y border del formulario serán requeridos.** 
+- Si se selecciona un país que no tiene bordes, automáticamente el formulario debería ser válido, es decir, **solo serán requeridos los campos region y country del formulario.**
+
+Entonces, para solucionar el problema detectado, tendremos que **agregar o eliminar dinámicamente**, en tiempo de ejecución los validadores para el campo **border**, según si un país seleccionado tenga o no bordes.
+
+
+````typescript
+@Component({
+  selector: 'app-selector-page',
+  templateUrl: './selector-page.component.html',
+  styles: [
+  ]
+})
+export class SelectorPageComponent implements OnInit, OnDestroy {
+  /*other code*/
+  public myForm: FormGroup = this._fb.nonNullable.group({
+    region: ['', [Validators.required]],
+    country: ['', [Validators.required]],
+    border: ['', [Validators.required]],
+  });
+
+   /*other code*/
+
+  private _onCountryChange(): void {
+    this._countrySubscription$ = this.myForm.get('country')?.valueChanges
+      .pipe(
+        tap(() => this.myForm.controls['border'].reset()),
+        filter((alphaCode: string) => alphaCode.trim().length > 0),
+        switchMap(alphaCode => this._countriesService.getCountryByAlphaCode(alphaCode)),
+        switchMap(country => this._countriesService.getCountryBordersByCodes(country.borders)),
+        tap(countries => countries.length > 0 ? this._addValidators('border', Validators.required) : this._removeValidators('border', Validators.required)), // (1) Cuando un país no tiene bordes, que el formulario sea válido
+      )
+      .subscribe(countries => {
+        this.borders = countries;
+      });
+  }
+
+  private _removeValidators(field: string, validators: ValidatorFn | ValidatorFn[]) {
+    this.myForm.controls[field].removeValidators(validators);
+    this._updateValueAndValidity(field);
+  }
+
+  private _addValidators(field: string, validators: ValidatorFn | ValidatorFn[]) {
+    this.myForm.controls[field].addValidators(validators);
+    this._updateValueAndValidity(field);
+  }
+
+  private _updateValueAndValidity(field: string) {
+    this.myForm.controls[field].updateValueAndValidity();
+  }  
+}
+````
+
+Como observamos en el código anterior, hemos **(1) agregado otro operador tap() de RxJs** para poder agregar o quitar dinámicamente los validadores al campo **border**. Centrémonos
+en ese código mencionado:
+
+````typescript
+tap(countries => countries.length > 0 ? this._addValidators('border', Validators.required) : this._removeValidators('border', Validators.required))
+````
+Lo que hago es ver si el arreglo tiene datos, si lo tiene pues **agrego el validador required** en caso contrario, lo elimino. Para agregar o eliminar
+he creado dos métodos, que recibe el campo al cual agregaré o eliminaré el validador (para futuras reutilizaciones). Finalmente, se creó un tercer método
+llamado **_updateValueAndValidity()*, que según la documentación de Angular, después de que hagamos una eliminación o agregación de validadores en tiempo
+de ejecución, debemos llamar al método **updateValueAndValidity()** para que se actualicen los validadores del campo.
+
+Listo, con esos cambios nuestro formulario será válido cuando se seleccione un país que no tiene bordes, mientras que si el país seleccionado tiene bordes,
+el formulario estará inválido hasta que se seleccione un borde.
+
+A continuación se explícan los [métodos de Angular](https://angular.io/api/forms/AbstractControl#addvalidators) utilizados:
+
+### addValidators()
+
+Agregue uno o varios validadores sincrónicos a este control, sin afectar a otros validadores.
+
+**NOTA**
+
+> Cuando **agrega o elimina** un validador en tiempo de ejecución, debe llamar a **updateValueAndValidity()**
+> para que la nueva validación surta efecto.
+
+**Agregar un validador que ya existe no tendrá ningún efecto.** Si hay funciones de validación duplicadas en la matriz de validadores, solo se agregará la primera instancia a un control de formulario.
+
+### removeValidators()
+
+Eliminar un validador síncrono de este control, sin afectar a otros validadores. Los validadores se comparan por referencia de función; 
+**debe pasar una referencia a la misma función de validación exacta que la que se configuró originalmente.** 
+``Si no se encuentra un validador proporcionado, se ignora.``
+
+### updateValueAndValidity()
+
+Recalcula el valor y el estado de validación del control.

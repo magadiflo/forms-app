@@ -1,7 +1,7 @@
 <h1 class="mt-3">Selectores anidados</h1>
 <hr>
 
-<form [formGroup]="myForm">
+<form [formGroup]="myForm" (ngSubmit)="onSave()">
   <!-- Región -->
   <div class="row mb-3">
     <div class="col">
@@ -32,9 +32,11 @@
       </select>
     </div>
   </div>
+  <br>
+  <button type="submit" [disabled]="myForm.invalid" class="btn btn-outline-primary">Guardar</button>
 </form>
 
-<h4>Formulario</h4>
+<h4 class="mt-4">Formulario</h4>
 <code>
   <pre>{{ myForm.value | json }}</pre>
 </code>

@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { Subscription, filter, switchMap, tap } from 'rxjs';
 
 import { CountriesService } from '../../services/countries.service';
@@ -42,6 +42,11 @@ export class SelectorPageComponent implements OnInit, OnDestroy {
     this._countrySubscription$?.unsubscribe();
   }
 
+  onSave(): void {
+    console.log(this.myForm.value);
+    this.myForm.reset();
+  }
+
   private _onRegionChange(): void {
     this._regionSubscription$ = this.myForm.get('region')?.valueChanges
       .pipe(
@@ -61,10 +66,24 @@ export class SelectorPageComponent implements OnInit, OnDestroy {
         filter((alphaCode: string) => alphaCode.trim().length > 0), //* Solo hacemos la petición si no viene vacío
         switchMap(alphaCode => this._countriesService.getCountryByAlphaCode(alphaCode)),
         switchMap(country => this._countriesService.getCountryBordersByCodes(country.borders)),
+        tap(countries => countries.length > 0 ? this._addValidators('border', Validators.required) : this._removeValidators('border', Validators.required)), //* Cuando un país no tiene bordes, que el formulario sea válido
       )
       .subscribe(countries => {
         this.borders = countries;
       });
   }
 
+  private _removeValidators(field: string, validators: ValidatorFn | ValidatorFn[]) {
+    this.myForm.controls[field].removeValidators(validators);
+    this._updateValueAndValidity(field);
+  }
+
+  private _addValidators(field: string, validators: ValidatorFn | ValidatorFn[]) {
+    this.myForm.controls[field].addValidators(validators);
+    this._updateValueAndValidity(field);
+  }
+
+  private _updateValueAndValidity(field: string) {
+    this.myForm.controls[field].updateValueAndValidity();
+  }
 }
