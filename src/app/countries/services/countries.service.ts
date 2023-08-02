@@ -29,4 +29,13 @@ export class CountriesService {
         map(countries => countries.map(country => ({ name: country.name.common, cca3: country.cca3, borders: country.borders ?? [] }))),
       )
   }
+
+  getCountryByAlphaCode(alphaCode: string): Observable<SmallCountry> {
+    const params = new HttpParams().set('fields', 'cca3,name,borders');
+    return this._http.get<Country>(`${this._apiUrlCountries}/alpha/${alphaCode}`, { params })
+      .pipe(
+        tap(country => console.log({ country })),
+        map(country => ({ name: country.name.common, cca3: country.cca3, borders: country.borders ?? [] })),
+      )
+  }
 }
