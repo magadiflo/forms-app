@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Subscription, switchMap } from 'rxjs';
+import { Subscription, switchMap, tap } from 'rxjs';
 
 import { CountriesService } from '../../services/countries.service';
 import { Region, SmallCountry } from '../../interfaces/country.interfaces';
@@ -41,10 +41,10 @@ export class SelectorPageComponent implements OnInit, OnDestroy {
   private _onRegionChange(): void {
     this._regionSubscription$ = this.myForm.get('region')?.valueChanges
       .pipe(
+        tap(() => this.myForm.controls['country'].reset()), //* Para resetear el segundo selector
         switchMap(region => this._countriesService.getCountriesByRegion(region))
       )
       .subscribe((countries: SmallCountry[]) => {
-        console.log({ countries });
         this.countriesByRegion = countries;
       });
   }
