@@ -1,0 +1,31 @@
+<h2>Validaciones Reactivas Personalizadas</h2>
+<div>
+  Las validaciones utilizadas en este componente fueron tomadas de la página web de
+  <a
+    href="https://itnext.io/empowering-angular-forms-40-handcrafted-custom-validators-for-precision-2023-0951cc0a1180">itnext.io</a>
+</div>
+<hr>
+
+<div class="row">
+  <div class="col-sm-8">
+    <form [formGroup]="myForm" (ngSubmit)="onSave()" autocomplete="off">
+
+      <div class="row mb-3">
+        <label class="col-sm-3 col-form-label">Email</label>
+        <div class="col-sm-9">
+          <input type="email" formControlName="email" class="form-control" placeholder="Email">
+          <span class="form-text text-danger">mensaje de error</span>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <button class="btn btn-primary float-end" type="submit">
+            Crear
+          </button>
+        </div>
+      </div>
+
+    </form>
+  </div>
+</div>
