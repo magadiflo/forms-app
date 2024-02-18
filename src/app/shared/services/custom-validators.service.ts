@@ -36,7 +36,16 @@ export class CustomValidatorsService {
       const url = control.value as string;
       //* Definimos los criterios de validación de la url usando expresión regular
       const urlPattern = /^((http|https|ftp):\/\/)?([\w-]+\.)+[\w-]+(\/[\w- .\/?%&=]*)?$/;
-      return urlPattern.test(url) ? null : { 'url': true};
+      return urlPattern.test(url) ? null : { 'url': true };
+    }
+  }
+
+  public dateFormatValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const date = control.value as string;
+      //* Definimos el formato de validación de la fecha usando expresión regular
+      const datePattern = /^\d{4}-\d{2}-\d{2}$/; //* Example: YYYY-MM-DD
+      return datePattern.test(date) ? null : { 'dateFormat': true };
     }
   }
 }

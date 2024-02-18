@@ -46,6 +46,15 @@
           </span>
         </div>
       </div>
+      <div class="row mb-3">
+        <label class="col-sm-3 col-form-label">Date</label>
+        <div class="col-sm-9">
+          <input type="text" formControlName="date" class="form-control" placeholder="date">
+          <span *ngIf="isNotValidField('date')" class="form-text text-danger">
+            {{ getErrorMessage('date') }}
+          </span>
+        </div>
+      </div>
 
       <div class="row">
         <div class="col">
@@ -74,6 +83,8 @@
     <code><pre>{{ myForm.controls['phone'].errors | json }}</pre></code>
     <h6>Url</h6>
     <code><pre>{{ myForm.controls['url'].errors | json }}</pre></code>
+    <h6>Date</h6>
+    <code><pre>{{ myForm.controls['date'].errors | json }}</pre></code>
 
   </div>
 </div>
