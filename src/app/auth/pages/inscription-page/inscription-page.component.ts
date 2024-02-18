@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+
+import { CustomValidatorsService } from './../../../shared/services/custom-validators.service';
 
 @Component({
   selector: 'app-inscription-page',
@@ -9,14 +11,24 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 export class InscriptionPageComponent {
 
   public myForm: FormGroup = this._fb.group({
-    email: [''],
+    email: ['martin@gmail.com', [Validators.required, Validators.email, this._customValidators.emailDomainValidator('gmail.com')]],
   });
 
-  constructor(private _fb: FormBuilder) { }
+  constructor(
+    private _fb: FormBuilder,
+    private _customValidators: CustomValidatorsService) { }
 
   public onSave(): void {
     console.log(this.myForm.value);
     this.myForm.markAllAsTouched();
+  }
+
+  isNotValidField(field: string) {
+    return this._customValidators.isNotValidField(this.myForm, field);
+  }
+
+  getErrorMessage(field: string, field2?: string): string {
+    return this._customValidators.getErrorMessageTwoField(this.myForm, field, field2);
   }
 
 }
