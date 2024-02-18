@@ -19,6 +19,15 @@
           </span>
         </div>
       </div>
+      <div class="row mb-3">
+        <label class="col-sm-3 col-form-label">Password</label>
+        <div class="col-sm-9">
+          <input type="password" formControlName="password" class="form-control" placeholder="Password">
+          <span *ngIf="isNotValidField('password')" class="form-text text-danger">
+            {{ getErrorMessage('password') }}
+          </span>
+        </div>
+      </div>
 
       <div class="row">
         <div class="col">
@@ -41,6 +50,8 @@
 
     <h6>Email</h6>
     <code><pre>{{ myForm.controls['email'].errors | json }}</pre></code>
+    <h6>Password</h6>
+    <code><pre>{{ myForm.controls['password'].errors | json }}</pre></code>
 
   </div>
 </div>
