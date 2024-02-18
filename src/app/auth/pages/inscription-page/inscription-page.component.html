@@ -37,6 +37,15 @@
           </span>
         </div>
       </div>
+      <div class="row mb-3">
+        <label class="col-sm-3 col-form-label">Url</label>
+        <div class="col-sm-9">
+          <input type="url" formControlName="url" class="form-control" placeholder="url">
+          <span *ngIf="isNotValidField('url')" class="form-text text-danger">
+            {{ getErrorMessage('url') }}
+          </span>
+        </div>
+      </div>
 
       <div class="row">
         <div class="col">
@@ -63,6 +72,8 @@
     <code><pre>{{ myForm.controls['password'].errors | json }}</pre></code>
     <h6>Phone</h6>
     <code><pre>{{ myForm.controls['phone'].errors | json }}</pre></code>
+    <h6>Url</h6>
+    <code><pre>{{ myForm.controls['url'].errors | json }}</pre></code>
 
   </div>
 </div>

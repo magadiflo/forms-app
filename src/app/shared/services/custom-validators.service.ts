@@ -30,4 +30,13 @@ export class CustomValidatorsService {
       return phonePattern.test(phone) ? null : { 'phoneNumber': true };
     }
   }
+
+  public urlValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const url = control.value as string;
+      //* Definimos los criterios de validación de la url usando expresión regular
+      const urlPattern = /^((http|https|ftp):\/\/)?([\w-]+\.)+[\w-]+(\/[\w- .\/?%&=]*)?$/;
+      return urlPattern.test(url) ? null : { 'url': true};
+    }
+  }
 }

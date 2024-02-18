@@ -14,7 +14,8 @@ export class InscriptionPageComponent {
   public myForm: FormGroup = this._fb.group({
     email: ['martin@gmail.com', [Validators.required, Validators.email, this._customValidators.emailDomainValidator('gmail.com')]],
     password: ['aA12345@55', [Validators.required, this._customValidators.passwordStrengthValidator()]],
-    phone: ['943852968', [Validators.required, this._customValidators.phoneNumberValidator(9)]]
+    phone: ['943852968', [Validators.required, this._customValidators.phoneNumberValidator(9)]],
+    url: ['http://www.google.com/seach=videos', [Validators.required, this._customValidators.urlValidator()]]
   });
 
   constructor(
