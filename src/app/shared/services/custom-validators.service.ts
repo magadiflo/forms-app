@@ -48,4 +48,11 @@ export class CustomValidatorsService {
       return datePattern.test(date) ? null : { 'dateFormat': true };
     }
   }
+
+  public creditCardValidator = (control: AbstractControl): ValidationErrors | null => {
+    const cardNumber = control.value as string;
+    //* Definimos criterios de validación de la tarjeta de crédito usando expresión regular
+    const cardPattern = /^4[0-9]{12}(?:[0-9]{3})?$/; //* Example: Visa card
+    return cardPattern.test(cardNumber) ? null : { 'creditCard': true };
+  }
 }
