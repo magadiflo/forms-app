@@ -13,7 +13,8 @@ export class InscriptionPageComponent {
 
   public myForm: FormGroup = this._fb.group({
     email: ['martin@gmail.com', [Validators.required, Validators.email, this._customValidators.emailDomainValidator('gmail.com')]],
-    password: ['', [Validators.required, this._customValidators.passwordStrengthValidator()]]
+    password: ['aA12345@55', [Validators.required, this._customValidators.passwordStrengthValidator()]],
+    phone: ['943852968', [Validators.required, this._customValidators.phoneNumberValidator(9)]]
   });
 
   constructor(

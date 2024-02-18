@@ -21,6 +21,7 @@ export function getErrorMessageTwoField(form: FormGroup, field: string, field2?:
                                         al menos una letra mayúscula, al menos un dígito,
                                         al menos un carácter especial entre @, $, !, %, *, ?, & y
                                         la longitud mínima de la contraseña debe ser de 8 caracteres.`;
+      case 'phoneNumber': return `El campo ${field} debe contener exactamente 9 números.`;
     }
   }
 

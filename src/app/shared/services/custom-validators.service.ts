@@ -21,4 +21,13 @@ export class CustomValidatorsService {
       return strongPasswordPattern.test(password) ? null : { 'passwordStrength': true };
     }
   }
+
+  public phoneNumberValidator(length: number): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const phone = control.value as string;
+      //* Definimos los criterios de validación del phone usando expresión regular
+      const phonePattern = new RegExp(`^[0-9]{${length}}$`);
+      return phonePattern.test(phone) ? null : { 'phoneNumber': true };
+    }
+  }
 }
