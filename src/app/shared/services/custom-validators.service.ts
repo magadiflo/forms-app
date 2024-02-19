@@ -72,4 +72,12 @@ export class CustomValidatorsService {
       return (passwordControl && confirmPassword !== passwordControl.value) ? { 'equality': true } : null;
     }
   }
+
+  public fileTypeValidator(allowedTypes: string[]): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const image = control.value as string;
+      const extension = image?.slice(image?.lastIndexOf('.') + 1).toLowerCase();
+      return (image && allowedTypes.includes(extension)) ? null : { 'fileTypeValidation': true };
+    }
+  }
 }

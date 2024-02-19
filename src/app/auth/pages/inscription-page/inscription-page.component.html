@@ -82,6 +82,15 @@
           </span>
         </div>
       </div>
+      <div class="row mb-3">
+        <label class="col-sm-3 col-form-label">File</label>
+        <div class="col-sm-9">
+          <input type="file" formControlName="file" class="form-control" placeholder="file">
+          <span *ngIf="isNotValidField('file')" class="form-text text-danger">
+            {{ getErrorMessage('file') }}
+          </span>
+        </div>
+      </div>
 
       <div class="row">
         <div class="col">

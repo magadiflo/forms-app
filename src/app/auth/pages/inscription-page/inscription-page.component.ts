@@ -20,6 +20,7 @@ export class InscriptionPageComponent {
     cardNumber: ['4940190000370787', [Validators.required, this._customValidators.creditCardValidator]],
     numeric: [15, [Validators.required, this._customValidators.numericValidator]],
     'confirm-password': ['aA12345@55', [Validators.required, this._customValidators.equalityValidator('password')]],
+    file: [null, [Validators.required, this._customValidators.fileTypeValidator(['jpg', 'jpeg', 'png'])]],
   });
 
   constructor(
