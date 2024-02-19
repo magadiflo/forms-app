@@ -1,0 +1,132 @@
+<h2>Validaciones Reactivas Personalizadas</h2>
+<div>
+  Las validaciones utilizadas en este componente fueron tomadas de la página web de
+  <a
+    href="https://itnext.io/empowering-angular-forms-40-handcrafted-custom-validators-for-precision-2023-0951cc0a1180">itnext.io</a>
+</div>
+<hr>
+
+<div class="row">
+  <div class="col-sm-8">
+    <form [formGroup]="myForm" (ngSubmit)="onSave()" autocomplete="off">
+
+      <div class="row mb-3">
+        <label class="col-sm-3 col-form-label">Email</label>
+        <div class="col-sm-9">
+          <input type="email" formControlName="email" class="form-control" placeholder="Email">
+          <span *ngIf="isNotValidField('email')" class="form-text text-danger">
+            {{ getErrorMessage('email') }}
+          </span>
+        </div>
+      </div>
+      <div class="row mb-3">
+        <label class="col-sm-3 col-form-label">Password</label>
+        <div class="col-sm-9">
+          <input type="password" formControlName="password" class="form-control" placeholder="Password">
+          <span *ngIf="isNotValidField('password')" class="form-text text-danger">
+            {{ getErrorMessage('password') }}
+          </span>
+        </div>
+      </div>
+      <div class="row mb-3">
+        <label class="col-sm-3 col-form-label">Confirm Password</label>
+        <div class="col-sm-9">
+          <input type="password" formControlName="confirm-password" class="form-control" placeholder="confirm password">
+          <span *ngIf="isNotValidField('confirm-password')" class="form-text text-danger">
+            {{ getErrorMessage('confirm-password') }}
+          </span>
+        </div>
+      </div>
+      <div class="row mb-3">
+        <label class="col-sm-3 col-form-label">Phone</label>
+        <div class="col-sm-9">
+          <input type="tel" formControlName="phone" class="form-control" placeholder="phone">
+          <span *ngIf="isNotValidField('phone')" class="form-text text-danger">
+            {{ getErrorMessage('phone') }}
+          </span>
+        </div>
+      </div>
+      <div class="row mb-3">
+        <label class="col-sm-3 col-form-label">Url</label>
+        <div class="col-sm-9">
+          <input type="url" formControlName="url" class="form-control" placeholder="url">
+          <span *ngIf="isNotValidField('url')" class="form-text text-danger">
+            {{ getErrorMessage('url') }}
+          </span>
+        </div>
+      </div>
+      <div class="row mb-3">
+        <label class="col-sm-3 col-form-label">Date</label>
+        <div class="col-sm-9">
+          <input type="text" formControlName="date" class="form-control" placeholder="date">
+          <span *ngIf="isNotValidField('date')" class="form-text text-danger">
+            {{ getErrorMessage('date') }}
+          </span>
+        </div>
+      </div>
+      <div class="row mb-3">
+        <label class="col-sm-3 col-form-label">Card Number</label>
+        <div class="col-sm-9">
+          <input type="text" formControlName="cardNumber" class="form-control" placeholder="card number">
+          <span *ngIf="isNotValidField('cardNumber')" class="form-text text-danger">
+            {{ getErrorMessage('cardNumber') }}
+          </span>
+        </div>
+      </div>
+      <div class="row mb-3">
+        <label class="col-sm-3 col-form-label">Numeric</label>
+        <div class="col-sm-9">
+          <input type="text" formControlName="numeric" class="form-control" placeholder="numeric">
+          <span *ngIf="isNotValidField('numeric')" class="form-text text-danger">
+            {{ getErrorMessage('numeric') }}
+          </span>
+        </div>
+      </div>
+      <div class="row mb-3">
+        <label class="col-sm-3 col-form-label">File</label>
+        <div class="col-sm-9">
+          <input type="file" formControlName="file" class="form-control" placeholder="file">
+          <span *ngIf="isNotValidField('file')" class="form-text text-danger">
+            {{ getErrorMessage('file') }}
+          </span>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <button class="btn btn-primary float-end" type="submit">
+            Crear
+          </button>
+        </div>
+      </div>
+
+    </form>
+  </div>
+  <div class="col-sm-4">
+    <ul>
+      <li>Form Valid: <span class="text-primary">{{ myForm.valid }}</span></li>
+      <li>Form Status: <span class="text-primary">{{ myForm.status }}</span></li>
+      <li>Form Pending: <span class="text-primary"> {{ myForm.pending }}</span></li>
+    </ul>
+    <h6>Form errors</h6>
+    <code><pre>{{ myForm.errors | json }}</pre></code>
+
+    <h6>Email</h6>
+    <code><pre>{{ myForm.controls['email'].errors | json }}</pre></code>
+    <h6>Password</h6>
+    <code><pre>{{ myForm.controls['password'].errors | json }}</pre></code>
+    <h6>Phone</h6>
+    <code><pre>{{ myForm.controls['phone'].errors | json }}</pre></code>
+    <h6>Url</h6>
+    <code><pre>{{ myForm.controls['url'].errors | json }}</pre></code>
+    <h6>Date</h6>
+    <code><pre>{{ myForm.controls['date'].errors | json }}</pre></code>
+    <h6>Card Number</h6>
+    <code><pre>{{ myForm.controls['cardNumber'].errors | json }}</pre></code>
+    <h6>Numeric</h6>
+    <code><pre>{{ myForm.controls['numeric'].errors | json }}</pre></code>
+    <h6>Confirm Password</h6>
+    <code><pre>{{ myForm.controls['confirm-password'].errors | json }}</pre></code>
+
+  </div>
+</div>

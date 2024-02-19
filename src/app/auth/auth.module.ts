@@ -4,11 +4,13 @@ import { ReactiveFormsModule } from '@angular/forms';
 
 import { AuthRoutingModule } from './auth-routing.module';
 import { RegisterPageComponent } from './pages/register-page/register-page.component';
+import { InscriptionPageComponent } from './pages/inscription-page/inscription-page.component';
 
 
 @NgModule({
   declarations: [
-    RegisterPageComponent
+    RegisterPageComponent,
+    InscriptionPageComponent,
   ],
   imports: [
     CommonModule,
