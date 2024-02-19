@@ -17,7 +17,8 @@ export class InscriptionPageComponent {
     phone: ['943852968', [Validators.required, this._customValidators.phoneNumberValidator(9)]],
     url: ['http://www.google.com/seach=videos', [Validators.required, this._customValidators.urlValidator()]],
     date: ['2024-08-02', [Validators.required, this._customValidators.dateFormatValidator()]],
-    cardNumber: ['4940190000370787', [Validators.required, this._customValidators.creditCardValidator]]
+    cardNumber: ['4940190000370787', [Validators.required, this._customValidators.creditCardValidator]],
+    numeric: [15, [Validators.required, this._customValidators.numericValidator]],
   });
 
   constructor(

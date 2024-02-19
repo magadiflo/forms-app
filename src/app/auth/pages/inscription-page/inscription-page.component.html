@@ -64,6 +64,15 @@
           </span>
         </div>
       </div>
+      <div class="row mb-3">
+        <label class="col-sm-3 col-form-label">Numeric</label>
+        <div class="col-sm-9">
+          <input type="text" formControlName="numeric" class="form-control" placeholder="numeric">
+          <span *ngIf="isNotValidField('numeric')" class="form-text text-danger">
+            {{ getErrorMessage('numeric') }}
+          </span>
+        </div>
+      </div>
 
       <div class="row">
         <div class="col">
@@ -96,6 +105,8 @@
     <code><pre>{{ myForm.controls['date'].errors | json }}</pre></code>
     <h6>Card Number</h6>
     <code><pre>{{ myForm.controls['cardNumber'].errors | json }}</pre></code>
+    <h6>Numeric</h6>
+    <code><pre>{{ myForm.controls['numeric'].errors | json }}</pre></code>
 
   </div>
 </div>
