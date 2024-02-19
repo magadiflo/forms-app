@@ -49,22 +49,6 @@ export class CustomValidatorsService {
     }
   }
 
-  //* Otra forma de definir las funciones
-
-  public creditCardValidator = (control: AbstractControl): ValidationErrors | null => {
-    const cardNumber = control.value as string;
-    //* Definimos criterios de validación de la tarjeta de crédito usando expresión regular
-    const cardPattern = /^4[0-9]{12}(?:[0-9]{3})?$/; //* Example: Visa card
-    return cardPattern.test(cardNumber) ? null : { 'creditCard': true };
-  }
-
-  public numericValidator = (control: AbstractControl): ValidationErrors | null => {
-    const value = control.value;
-    //* Define criterios de validación de números usando expresión regular
-    const numericPattern = /^\d+$/;
-    return numericPattern.test(value) ? null : { 'numeric': true };
-  }
-
   public equalityValidator(controlName: string): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
       const confirmPassword = control.value as string;
@@ -79,5 +63,21 @@ export class CustomValidatorsService {
       const extension = image?.slice(image?.lastIndexOf('.') + 1).toLowerCase();
       return (image && allowedTypes.includes(extension)) ? null : { 'fileTypeValidation': true };
     }
+  }
+
+  //* Otra forma de definir las funciones
+
+  public creditCardValidator = (control: AbstractControl): ValidationErrors | null => {
+    const cardNumber = control.value as string;
+    //* Definimos criterios de validación de la tarjeta de crédito usando expresión regular
+    const cardPattern = /^4[0-9]{12}(?:[0-9]{3})?$/; //* Example: Visa card
+    return cardPattern.test(cardNumber) ? null : { 'creditCard': true };
+  }
+
+  public numericValidator = (control: AbstractControl): ValidationErrors | null => {
+    const value = control.value;
+    //* Define criterios de validación de números usando expresión regular
+    const numericPattern = /^\d+$/;
+    return numericPattern.test(value) ? null : { 'numeric': true };
   }
 }
