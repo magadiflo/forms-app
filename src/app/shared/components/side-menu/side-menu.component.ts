@@ -20,6 +20,7 @@ export class SideMenuComponent {
   ];
   public authMenu: MenuItem[] = [
     { title: 'Registro', route: './auth/register', },
+    { title: 'Inscripción', route: './auth/inscription', },
   ];
   public countriesMenu: MenuItem[] = [
     { title: 'Selectores', route: './countries/selector', },
