@@ -64,4 +64,12 @@ export class CustomValidatorsService {
     const numericPattern = /^\d+$/;
     return numericPattern.test(value) ? null : { 'numeric': true };
   }
+
+  public equalityValidator(controlName: string): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const confirmPassword = control.value as string;
+      const passwordControl = control.parent?.get(controlName);
+      return (passwordControl && confirmPassword !== passwordControl.value) ? { 'equality': true } : null;
+    }
+  }
 }

@@ -29,6 +29,15 @@
         </div>
       </div>
       <div class="row mb-3">
+        <label class="col-sm-3 col-form-label">Confirm Password</label>
+        <div class="col-sm-9">
+          <input type="password" formControlName="confirm-password" class="form-control" placeholder="confirm password">
+          <span *ngIf="isNotValidField('confirm-password')" class="form-text text-danger">
+            {{ getErrorMessage('confirm-password') }}
+          </span>
+        </div>
+      </div>
+      <div class="row mb-3">
         <label class="col-sm-3 col-form-label">Phone</label>
         <div class="col-sm-9">
           <input type="tel" formControlName="phone" class="form-control" placeholder="phone">
@@ -107,6 +116,8 @@
     <code><pre>{{ myForm.controls['cardNumber'].errors | json }}</pre></code>
     <h6>Numeric</h6>
     <code><pre>{{ myForm.controls['numeric'].errors | json }}</pre></code>
+    <h6>Confirm Password</h6>
+    <code><pre>{{ myForm.controls['confirm-password'].errors | json }}</pre></code>
 
   </div>
 </div>

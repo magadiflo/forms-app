@@ -19,6 +19,7 @@ export class InscriptionPageComponent {
     date: ['2024-08-02', [Validators.required, this._customValidators.dateFormatValidator()]],
     cardNumber: ['4940190000370787', [Validators.required, this._customValidators.creditCardValidator]],
     numeric: [15, [Validators.required, this._customValidators.numericValidator]],
+    'confirm-password': ['aA12345@55', [Validators.required, this._customValidators.equalityValidator('password')]],
   });
 
   constructor(
